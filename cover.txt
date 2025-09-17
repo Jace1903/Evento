@@ -1,0 +1,39 @@
+export default function CoverPage() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-900 text-white text-center px-4">
+      <div className="max-w-2xl">
+        {/* App Name */}
+        <h1 className="text-6xl font-bold mb-6 tracking-tight">
+          Evento
+        </h1>
+
+        {/* Tagline */}
+        <p className="text-lg text-gray-300 mb-8 leading-relaxed">
+          Discover all Bay Area events in one place – from hackathons and tech talks 
+          to concerts, cultural festivals, and more.
+        </p>
+
+        {/* Buttons */}
+        <div className="flex justify-center gap-4">
+          <a
+            href="#explore"
+            className="px-6 py-3 rounded-md bg-indigo-600 hover:bg-indigo-700 font-medium"
+          >
+            Explore Events
+          </a>
+          <a
+            href="#join"
+            className="px-6 py-3 rounded-md border border-gray-400 hover:bg-gray-800 font-medium"
+          >
+            Join Community
+          </a>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <footer className="absolute bottom-6 text-sm text-gray-400">
+        © {new Date().getFullYear()} Evento · Built for the Bay Area
+      </footer>
+    </main>
+  );
+}
