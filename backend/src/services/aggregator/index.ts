@@ -1,5 +1,6 @@
 import { Aggregator } from './types';
 import { EventbriteAggregator } from './eventbrite';
+import { TicketmasterAggregator } from './ticketmaster';
 import { LumaAggregator } from './luma';
 import { MeetupAggregator } from './meetup';
 import { upsertEvents } from './upsert';
@@ -7,10 +8,12 @@ import { upsertEvents } from './upsert';
 export function buildAggregators(): Aggregator[] {
   const list: Aggregator[] = [];
 
-  if (process.env.EVENTBRITE_API_KEY) {
-    list.push(new EventbriteAggregator(process.env.EVENTBRITE_API_KEY));
+  list.push(new EventbriteAggregator());
+
+  if (process.env.TICKETMASTER_API_KEY) {
+    list.push(new TicketmasterAggregator(process.env.TICKETMASTER_API_KEY));
   } else {
-    console.warn('[aggregator] EVENTBRITE_API_KEY not set — skipping Eventbrite');
+    console.warn('[aggregator] TICKETMASTER_API_KEY not set — skipping Ticketmaster');
   }
 
   list.push(new LumaAggregator());
