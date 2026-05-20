@@ -27,3 +27,13 @@ export async function fetchEvent(id: string): Promise<ApiEvent> {
   if (!res.ok) throw new Error(`Failed to fetch event: ${res.status}`);
   return res.json();
 }
+
+export async function fetchSavedEvents(token: string): Promise<ApiEvent[]> {
+  const res = await fetch(`${API_BASE}/api/saved-events`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error(`Failed to fetch saved events: ${res.status}`);
+  const data = await res.json() as { events: ApiEvent[] };
+  return data.events;
+}

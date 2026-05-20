@@ -15,17 +15,52 @@ async function ensureUser(clerkId: string, email: string, name: string | null) {
   );
 }
 
-// GET /api/saved-events — list saved event IDs for the current user
+// GET /api/saved-events — list full event objects saved by the current user
 router.get('/', requireAuth, async (req: Request, res: Response) => {
   const { userId } = getAuth(req);
   const { rows } = await pool.query(
-    `SELECT e.id FROM saved_events se
-     JOIN users u ON se.user_id = u.id
-     JOIN events e ON se.event_id = e.id
-     WHERE u.clerk_id = $1`,
+    `SELECT
+       e.id, e.title, e.description,
+       e.start_at, e.end_at,
+       e.location_name, e.location_address,
+       e.is_free, e.price_min, e.price_max,
+       e.attendee_count, e.source, e.source_url, e.image_url,
+       c.name  AS category_name,
+       c.slug  AS category_slug,
+       c.emoji AS category_emoji,
+       c.color AS category_color,
+       se.created_at AS saved_at
+     FROM saved_events se
+     JOIN users u       ON se.user_id  = u.id
+     JOIN events e      ON se.event_id = e.id
+     LEFT JOIN categories c ON e.category_id = c.id
+     WHERE u.clerk_id = $1
+     ORDER BY se.created_at DESC`,
     [userId]
   );
-  res.json({ savedIds: rows.map((r) => r.id) });
+
+  const events = rows.map((e) => ({
+    id: e.id,
+    title: e.title,
+    description: e.description,
+    startAt: e.start_at,
+    endAt: e.end_at,
+    locationName: e.location_name,
+    locationAddress: e.location_address,
+    isFree: e.is_free,
+    priceMin: e.price_min ? parseFloat(e.price_min) : null,
+    priceMax: e.price_max ? parseFloat(e.price_max) : null,
+    attendeeCount: e.attendee_count,
+    source: e.source,
+    sourceUrl: e.source_url,
+    imageUrl: e.image_url,
+    savedAt: e.saved_at,
+    category: e.category_slug
+      ? { name: e.category_name, slug: e.category_slug, emoji: e.category_emoji, color: e.category_color }
+      : null,
+  }));
+
+  res.json({ events });
 });
 
 // POST /api/saved-events — save or unsave an event (toggle)
