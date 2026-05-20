@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 's1.ticketm.net' },
+      { protocol: 'https', hostname: '*.ticketmaster.com' },
+      { protocol: 'https', hostname: 'resizing.flixster.com' },
+      { protocol: 'https', hostname: 'images.universe.com' },
+    ],
+  },
 };
 
 export default nextConfig;

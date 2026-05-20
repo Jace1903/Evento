@@ -1,4 +1,4 @@
-import { ApiEventsResponse } from './types';
+import { ApiEvent, ApiEventsResponse } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -18,5 +18,12 @@ export async function fetchEvents(params: {
 
   const res = await fetch(`${API_BASE}/api/events?${query}`, { cache: 'no-store' });
   if (!res.ok) throw new Error(`Failed to fetch events: ${res.status}`);
+  return res.json();
+}
+
+export async function fetchEvent(id: string): Promise<ApiEvent> {
+  const res = await fetch(`${API_BASE}/api/events/${id}`, { cache: 'no-store' });
+  if (res.status === 404) throw new Error('Event not found');
+  if (!res.ok) throw new Error(`Failed to fetch event: ${res.status}`);
   return res.json();
 }

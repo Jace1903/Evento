@@ -1,5 +1,6 @@
 import { ApiEvent } from '@/lib/types';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const SLUG_GRADIENT: Record<string, string> = {
   tech: 'from-blue-500 to-indigo-600',
@@ -44,7 +45,7 @@ export default function EventCard({ event }: { event: ApiEvent }) {
   const location = event.locationName ?? event.locationAddress ?? 'Bay Area';
 
   return (
-    <div className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-slate-100 hover:border-violet-200 transition-all duration-200 cursor-pointer flex flex-col">
+    <Link href={`/events/${event.id}`} className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-slate-100 hover:border-violet-200 transition-all duration-200 flex flex-col">
       {/* Banner: real image or gradient fallback */}
       <div className="relative h-36 overflow-hidden">
         {event.imageUrl ? (
@@ -105,6 +106,6 @@ export default function EventCard({ event }: { event: ApiEvent }) {
           </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

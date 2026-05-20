@@ -97,7 +97,13 @@ router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { rows } = await pool.query(
       `SELECT
-         e.*, c.name AS category_name, c.slug AS category_slug,
+         e.id, e.title, e.description,
+         e.start_at, e.end_at,
+         e.location_name, e.location_address,
+         e.latitude, e.longitude,
+         e.is_free, e.price_min, e.price_max,
+         e.attendee_count, e.source, e.source_url, e.image_url,
+         c.name AS category_name, c.slug AS category_slug,
          c.emoji AS category_emoji, c.color AS category_color
        FROM events e
        LEFT JOIN categories c ON e.category_id = c.id
@@ -108,7 +114,28 @@ router.get('/:id', async (req: Request, res: Response) => {
       res.status(404).json({ error: 'Event not found' });
       return;
     }
-    res.json(rows[0]);
+    const e = rows[0];
+    res.json({
+      id: e.id,
+      title: e.title,
+      description: e.description,
+      startAt: e.start_at,
+      endAt: e.end_at,
+      locationName: e.location_name,
+      locationAddress: e.location_address,
+      latitude: e.latitude ? parseFloat(e.latitude) : null,
+      longitude: e.longitude ? parseFloat(e.longitude) : null,
+      isFree: e.is_free,
+      priceMin: e.price_min ? parseFloat(e.price_min) : null,
+      priceMax: e.price_max ? parseFloat(e.price_max) : null,
+      attendeeCount: e.attendee_count,
+      source: e.source,
+      sourceUrl: e.source_url,
+      imageUrl: e.image_url,
+      category: e.category_slug
+        ? { name: e.category_name, slug: e.category_slug, emoji: e.category_emoji, color: e.category_color }
+        : null,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch event' });
