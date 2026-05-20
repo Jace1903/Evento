@@ -1,24 +1,53 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Navbar from '@/components/Navbar';
 import EventCard from '@/components/EventCard';
-import { mockEvents, CATEGORIES, Category } from '@/lib/mockEvents';
+import { CATEGORIES, Category } from '@/lib/mockEvents';
+import { fetchEvents } from '@/lib/api';
+import { ApiEvent } from '@/lib/types';
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState<Category>('All');
   const [search, setSearch] = useState('');
+  const [events, setEvents] = useState<ApiEvent[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const filtered = useMemo(() => {
-    return mockEvents.filter((e) => {
-      const matchesCategory = activeCategory === 'All' || e.category === activeCategory;
-      const matchesSearch =
-        search.trim() === '' ||
-        e.title.toLowerCase().includes(search.toLowerCase()) ||
-        e.location.toLowerCase().includes(search.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [activeCategory, search]);
+  const load = useCallback(async (category: Category, searchTerm: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchEvents({ category, search: searchTerm, limit: 50 });
+      setEvents(data.events);
+      setTotal(data.total);
+    } catch {
+      setError('Could not load events. Make sure the backend is running.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Reload when category changes immediately
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    load(activeCategory, search);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeCategory]);
+
+  // Debounce search input by 400ms
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      load(activeCategory, search);
+    }, 400);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -36,15 +65,8 @@ export default function Home() {
           <p className="text-lg text-slate-500 mb-8">
             Hackathons, tech talks, concerts, cultural festivals — all in one place.
           </p>
-
-          {/* Search bar */}
           <div className="relative max-w-xl mx-auto">
-            <svg
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input
@@ -58,9 +80,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Category filters + events */}
+      {/* Filters + grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Category chips */}
         <div className="flex gap-2 flex-wrap mb-8">
           {CATEGORIES.map((cat) => (
             <button
@@ -77,22 +98,47 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Results header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-900">
             {activeCategory === 'All' ? 'All Events' : activeCategory}
-            <span className="ml-2 text-sm font-normal text-slate-400">{filtered.length} events</span>
+            {!loading && (
+              <span className="ml-2 text-sm font-normal text-slate-400">{total} events</span>
+            )}
           </h2>
         </div>
 
-        {/* Events grid */}
-        {filtered.length > 0 ? (
+        {/* States */}
+        {error && (
+          <div className="text-center py-24">
+            <p className="text-4xl mb-3">⚠️</p>
+            <p className="text-slate-600 font-medium">{error}</p>
+          </div>
+        )}
+
+        {loading && !error && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filtered.map((event) => (
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl overflow-hidden border border-slate-100 animate-pulse">
+                <div className="h-36 bg-slate-200" />
+                <div className="p-4 space-y-3">
+                  <div className="h-3 bg-slate-200 rounded w-1/3" />
+                  <div className="h-4 bg-slate-200 rounded w-3/4" />
+                  <div className="h-3 bg-slate-200 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && !error && events.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {events.map((event) => (
               <EventCard key={event.id} event={event} />
             ))}
           </div>
-        ) : (
+        )}
+
+        {!loading && !error && events.length === 0 && (
           <div className="text-center py-24 text-slate-400">
             <p className="text-5xl mb-4">🔍</p>
             <p className="text-lg font-medium">No events found</p>
@@ -101,7 +147,6 @@ export default function Home() {
         )}
       </section>
 
-      {/* Footer */}
       <footer className="border-t border-slate-100 mt-16 py-8 text-center text-sm text-slate-400">
         © 2026 Evento · Discover the Bay Area
       </footer>
