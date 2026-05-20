@@ -1,4 +1,4 @@
-export type Category = 'All' | 'Tech' | 'Networking' | 'Cultural' | 'Music' | 'Creative' | 'Food & Drink';
+export type Category = 'All' | 'Tech' | 'Networking' | 'Cultural' | 'Music' | 'Creative' | 'Food & Drink' | 'Chendu Special';
 
 export interface Event {
   id: string;
@@ -13,7 +13,7 @@ export interface Event {
   isFree: boolean;
 }
 
-export const CATEGORIES: Category[] = ['All', 'Tech', 'Networking', 'Cultural', 'Music', 'Creative', 'Food & Drink'];
+export const CATEGORIES: Category[] = ['All', 'Tech', 'Networking', 'Cultural', 'Music', 'Creative', 'Food & Drink', 'Chendu Special'];
 
 export const mockEvents: Event[] = [
   {

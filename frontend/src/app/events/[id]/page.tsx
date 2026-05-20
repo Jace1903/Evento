@@ -29,6 +29,7 @@ const SLUG_GRADIENT: Record<string, string> = {
   music: 'from-rose-400 to-pink-600',
   creative: 'from-emerald-400 to-teal-600',
   'food-drink': 'from-amber-400 to-orange-500',
+  'chendu-special': 'from-pink-500 to-orange-400',
 };
 
 const SLUG_BADGE: Record<string, string> = {
@@ -38,6 +39,7 @@ const SLUG_BADGE: Record<string, string> = {
   music: 'bg-rose-100 text-rose-700',
   creative: 'bg-emerald-100 text-emerald-700',
   'food-drink': 'bg-amber-100 text-amber-700',
+  'chendu-special': 'bg-pink-100 text-pink-700',
 };
 
 function formatDate(iso: string) {

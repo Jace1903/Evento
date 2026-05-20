@@ -83,24 +83,40 @@ export default function Home() {
       {/* Filters + grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex gap-2 flex-wrap mb-8">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 ${
-                activeCategory === cat
-                  ? 'bg-violet-600 text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300 hover:text-violet-600'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {CATEGORIES.map((cat) => {
+            const isChendu = cat === 'Chendu Special';
+            const isActive = activeCategory === cat;
+            let cls = 'px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 ';
+            if (isActive && isChendu) {
+              cls += 'bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-sm';
+            } else if (isActive) {
+              cls += 'bg-violet-600 text-white shadow-sm';
+            } else if (isChendu) {
+              cls += 'bg-white text-pink-600 border border-pink-200 hover:border-pink-400 hover:text-pink-700';
+            } else {
+              cls += 'bg-white text-slate-600 border border-slate-200 hover:border-violet-300 hover:text-violet-600';
+            }
+            return (
+              <button key={cat} onClick={() => setActiveCategory(cat)} className={cls}>
+                {isChendu ? `🎉 ${cat}` : cat}
+              </button>
+            );
+          })}
         </div>
+
+        {activeCategory === 'Chendu Special' && (
+          <div className="mb-6 rounded-2xl bg-gradient-to-r from-pink-500 to-orange-400 p-5 text-white flex items-center gap-4">
+            <span className="text-4xl">🎉</span>
+            <div>
+              <p className="font-bold text-lg leading-tight">Chendu Special</p>
+              <p className="text-sm text-white/85">Fun things happening in San Francisco — curated for the squad</p>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-900">
-            {activeCategory === 'All' ? 'All Events' : activeCategory}
+            {activeCategory === 'All' ? 'All Events' : activeCategory === 'Chendu Special' ? 'Fun in SF' : activeCategory}
             {!loading && (
               <span className="ml-2 text-sm font-normal text-slate-400">{total} events</span>
             )}

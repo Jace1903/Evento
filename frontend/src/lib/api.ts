@@ -10,7 +10,7 @@ export async function fetchEvents(params: {
 }): Promise<ApiEventsResponse> {
   const query = new URLSearchParams();
   if (params.category && params.category !== 'All') {
-    query.set('category', params.category.toLowerCase().replace(' & ', '-'));
+    query.set('category', params.category.toLowerCase().replace(/\s*&\s*/g, '-').replace(/\s+/g, '-'));
   }
   if (params.search?.trim()) query.set('search', params.search.trim());
   if (params.page) query.set('page', String(params.page));

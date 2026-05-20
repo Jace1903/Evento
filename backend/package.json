@@ -10,6 +10,7 @@
     "migrate": "ts-node src/db/migrate.ts",
     "aggregate": "ts-node src/scripts/aggregate.ts",
     "seed:tech": "ts-node src/scripts/seed-tech-events.ts",
+    "seed:chendu": "ts-node src/scripts/seed-chendu-events.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
