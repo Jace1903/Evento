@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "migrate": "ts-node src/db/migrate.ts",
+    "aggregate": "ts-node src/scripts/aggregate.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
