@@ -13,6 +13,8 @@ export interface ApiEvent {
   source: string;
   sourceUrl: string | null;
   imageUrl: string | null;
+  latitude: number | null;
+  longitude: number | null;
   category: {
     name: string;
     slug: string;
