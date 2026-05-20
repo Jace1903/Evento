@@ -1,27 +1,14 @@
 import { Aggregator, NormalizedEvent } from './types';
 
-const BASE = 'https://api.predicthq.com/v1';
-
-// SF Bay Area center
-const SF_LAT = 37.7749;
-const SF_LNG = -122.4194;
-
-// PredictHQ category → our slug
-const CATEGORY_MAP: Record<string, string> = {
-  conferences: 'tech',
-  community: 'networking',
-  expos: 'tech',
-};
-
-// Refine by labels when category is ambiguous
-const TECH_LABELS = new Set(['technology', 'science', 'ai', 'machine-learning', 'software', 'startup', 'hackathon']);
-
-function resolveCategory(category: string, labels: string[]): string {
-  if (category === 'conferences' || category === 'expos') {
-    return labels.some((l) => TECH_LABELS.has(l)) ? 'tech' : 'networking';
-  }
-  return CATEGORY_MAP[category] ?? 'tech';
-}
+// Geonames IDs for Bay Area cities
+const BAY_AREA_PLACE_IDS = [
+  '5391959', // San Francisco
+  '5378538', // Oakland
+  '5392171', // San Jose
+  '5380748', // Palo Alto
+  '5349755', // Fremont
+  '5325738', // Berkeley
+].join(',');
 
 interface PhqGeo {
   geometry?: { coordinates?: [number, number] };
@@ -37,7 +24,6 @@ interface PhqEvent {
   end?: string;
   geo?: PhqGeo;
   phq_attendance?: number;
-  rank?: number;
 }
 interface PhqResponse {
   count: number;
@@ -52,14 +38,19 @@ function normalize(e: PhqEvent): NormalizedEvent {
     ?? [addr?.city, addr?.state].filter(Boolean).join(', ')
     ?? null;
 
+  const labels = e.labels ?? [];
+  const TECH_LABELS = ['technology', 'science', 'ai', 'machine-learning', 'software', 'startup', 'hackathon', 'engineering'];
+  const isTech = labels.some((l) => TECH_LABELS.includes(l));
+  const categorySlug = isTech ? 'tech' : 'networking';
+
   return {
     externalId: e.id,
     source: 'predicthq',
-    sourceUrl: `https://control.predicthq.com/events/${e.id}`,
+    sourceUrl: `https://predicthq.com/events/${e.id}`,
     title: e.title,
     description: e.description ?? null,
     imageUrl: null,
-    categorySlug: resolveCategory(e.category, e.labels ?? []),
+    categorySlug,
     startAt: new Date(e.start),
     endAt: e.end ? new Date(e.end) : null,
     locationName: null,
@@ -85,24 +76,20 @@ export class PredictHQAggregator implements Aggregator {
     const events: NormalizedEvent[] = [];
     let url: string | null = null;
 
-    // Build initial URL
+    const today = new Date().toISOString().split('T')[0];
     const params = new URLSearchParams({
-      category: 'conferences,community,expos',
-      'location_around.origin': `${SF_LAT},${SF_LNG}`,
-      'location_around.offset': '75mi',
-      'active.gte': new Date().toISOString().split('T')[0],
+      category: 'conferences',
+      'place.scope': BAY_AREA_PLACE_IDS,
+      'start.gte': today,
       limit: '100',
       sort: 'start',
-      state: 'active',
     });
-    url = `${BASE}/events/?${params}`;
+    url = `https://api.predicthq.com/v1/events/?${params}`;
 
-    while (url) {
+    let pages = 0;
+    while (url && pages < 3) {
       const res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          Accept: 'application/json',
-        },
+        headers: { Authorization: `Bearer ${this.token}`, Accept: 'application/json' },
       });
 
       if (!res.ok) {
@@ -113,9 +100,7 @@ export class PredictHQAggregator implements Aggregator {
       const data = (await res.json()) as PhqResponse;
       events.push(...data.results.map(normalize));
       url = data.next;
-
-      // Cap at 500 events (5 pages of 100)
-      if (events.length >= 500) break;
+      pages++;
     }
 
     return events;
