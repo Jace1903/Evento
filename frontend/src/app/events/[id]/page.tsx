@@ -2,11 +2,24 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useUser, SignInButton } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import { fetchEvent } from '@/lib/api';
 import { ApiEvent } from '@/lib/types';
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+async function toggleSave(eventId: string, email: string, name: string | null, token: string) {
+  const res = await fetch(`${API_BASE}/api/saved-events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ eventId, email, name }),
+  });
+  if (!res.ok) throw new Error('Failed to toggle save');
+  return res.json() as Promise<{ saved: boolean }>;
+}
 
 const SLUG_GRADIENT: Record<string, string> = {
   tech: 'from-blue-500 to-indigo-600',
@@ -56,9 +69,12 @@ function Skeleton() {
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { user, isSignedIn } = useUser();
   const [event, setEvent] = useState<ApiEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     fetchEvent(id)
@@ -68,6 +84,25 @@ export default function EventDetailPage() {
       })
       .finally(() => setLoading(false));
   }, [id]);
+
+  async function handleSave() {
+    if (!isSignedIn || !user) return;
+    setSaving(true);
+    try {
+      const token = await (window as any).Clerk?.session?.getToken();
+      const result = await toggleSave(
+        id,
+        user.primaryEmailAddress!.emailAddress,
+        user.fullName,
+        token
+      );
+      setSaved(result.saved);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   if (loading) return <Skeleton />;
 
@@ -117,6 +152,35 @@ export default function EventDetailPage() {
           </svg>
           Back
         </button>
+
+        {/* Save button */}
+        <div className="absolute top-4 right-4">
+          {isSignedIn ? (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className={`flex items-center gap-1.5 backdrop-blur-sm px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                saved
+                  ? 'bg-rose-500 text-white'
+                  : 'bg-black/30 hover:bg-black/50 text-white/90 hover:text-white'
+              }`}
+            >
+              <svg className="w-4 h-4" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              {saved ? 'Saved' : 'Save'}
+            </button>
+          ) : (
+            <SignInButton mode="modal">
+              <button className="flex items-center gap-1.5 bg-black/30 hover:bg-black/50 backdrop-blur-sm text-white/90 hover:text-white px-3 py-1.5 rounded-full text-sm font-medium transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+                Save
+              </button>
+            </SignInButton>
+          )}
+        </div>
       </div>
 
       {/* Content */}
