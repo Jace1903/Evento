@@ -1,4 +1,4 @@
-export type EventSource = 'eventbrite' | 'luma' | 'meetup' | 'cerebral_valley' | 'ticketmaster' | 'manual';
+export type EventSource = 'eventbrite' | 'luma' | 'meetup' | 'cerebral_valley' | 'ticketmaster' | 'predicthq' | 'manual';
 
 export interface DbUser {
   id: string;
