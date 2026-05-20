@@ -4,6 +4,7 @@ import { TicketmasterAggregator } from './ticketmaster';
 import { PredictHQAggregator } from './predicthq';
 import { LumaAggregator } from './luma';
 import { MeetupAggregator } from './meetup';
+import { ChenduSpecialAggregator } from './chendu';
 import { upsertEvents } from './upsert';
 
 export function buildAggregators(): Aggregator[] {
@@ -25,6 +26,12 @@ export function buildAggregators(): Aggregator[] {
 
   list.push(new LumaAggregator());
   list.push(new MeetupAggregator());
+
+  // Chendu Special: SF-specific fun events (sports, concerts, festivals, comedy)
+  list.push(new ChenduSpecialAggregator(
+    process.env.TICKETMASTER_API_KEY,
+    process.env.PREDICTHQ_TOKEN,
+  ));
 
   return list;
 }
