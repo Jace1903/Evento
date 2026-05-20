@@ -1,0 +1,7 @@
+CREATE TABLE categories (
+  id    SERIAL PRIMARY KEY,
+  name  TEXT NOT NULL UNIQUE,
+  slug  TEXT NOT NULL UNIQUE,
+  emoji TEXT NOT NULL,
+  color TEXT NOT NULL
+);
