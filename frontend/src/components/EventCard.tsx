@@ -9,7 +9,7 @@ const SLUG_GRADIENT: Record<string, string> = {
   music: 'from-rose-400 to-pink-600',
   creative: 'from-emerald-400 to-teal-600',
   'food-drink': 'from-amber-400 to-orange-500',
-  'chendu-special': 'from-pink-500 to-orange-400',
+  'chendu-special': 'from-pink-500 to-rose-600',
 };
 
 const SLUG_BADGE: Record<string, string> = {

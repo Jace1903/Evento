@@ -98,18 +98,29 @@ export default function Home() {
             }
             return (
               <button key={cat} onClick={() => setActiveCategory(cat)} className={cls}>
-                {isChendu ? `🎉 ${cat}` : cat}
+                {isChendu ? `🐘 ${cat}` : cat}
               </button>
             );
           })}
         </div>
 
         {activeCategory === 'Chendu Special' && (
-          <div className="mb-6 rounded-2xl bg-gradient-to-r from-pink-500 to-orange-400 p-5 text-white flex items-center gap-4">
-            <span className="text-4xl">🎉</span>
-            <div>
-              <p className="font-bold text-lg leading-tight">Chendu Special</p>
-              <p className="text-sm text-white/85">Fun things happening in San Francisco — curated for the squad</p>
+          <div className="mb-6 rounded-2xl overflow-hidden relative bg-gradient-to-br from-pink-600 via-pink-500 to-rose-400 p-6 text-white">
+            {/* decorative background elephants */}
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-8xl opacity-10 select-none pointer-events-none">🐘</span>
+            <span className="absolute right-32 bottom-0 text-5xl opacity-10 select-none pointer-events-none">🐘</span>
+            <span className="absolute right-20 top-1 text-3xl opacity-10 select-none pointer-events-none rotate-12">🐘</span>
+            <div className="relative flex items-center gap-5">
+              <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0 text-4xl shadow-inner">
+                🐘
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <p className="font-bold text-xl leading-tight">Chendu Special</p>
+                  <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">SF Only</span>
+                </div>
+                <p className="text-sm text-white/90">Pubs · Clubs · Cafes · Fun — the best of San Francisco for the squad 🎉</p>
+              </div>
             </div>
           </div>
         )}
